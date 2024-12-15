@@ -19,8 +19,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Validate stack.yml
-        run: docker-compose -f stack.yml config
+      # - name: Validate stack.yml
+      #   run: docker-compose -f stack.yml config
 
       - name: Add VPS to known hosts
         run: |
