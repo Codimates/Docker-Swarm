@@ -1,0 +1,149 @@
+services:
+
+  client:
+    image: dasuntheek/codimates-client:latest
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "3000:3000"
+    networks:
+      - codimates-network2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gateway:
+    image: dasuntheek/codimates-gateway:latest
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "4005:4005"
+    networks:
+      - codimates-network2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4005 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  user-service:
+    image: dasuntheek/codimates-user-service:latest
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "4001:4001"
+    networks:
+      - codimates-network2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4001 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  productandinventory:
+    image: dasuntheek/codimates-productandinventory:latest
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "4002:4002"
+    networks:
+      - codimates-network2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4002 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # order:
+  #   image: dasuntheek/codimates-order:latest
+  #   deploy:
+  #     replicas: 2
+  #     update_config:
+  #       parallelism: 1
+  #       delay: 10s
+  #       failure_action: rollback
+  #       order: start-first
+  #     restart_policy:
+  #       condition: on-failure
+  #     rollback_config:
+  #       parallelism: 1
+  #       delay: 10s
+  #   ports:
+  #     - "4004:4004"
+  #   networks:
+  #     - codimates-network2
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:4004 || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # management:
+  #   image: dasuntheek/codimates-management:latest
+  #   deploy:
+  #     replicas: 2
+  #     update_config:
+  #       parallelism: 1
+  #       delay: 10s
+  #       failure_action: rollback
+  #       order: start-first
+  #     restart_policy:
+  #       condition: on-failure
+  #     rollback_config:
+  #       parallelism: 1
+  #       delay: 10s
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #     - codimates-network2
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+networks:
+  codimates-network2:
+    driver: overlay

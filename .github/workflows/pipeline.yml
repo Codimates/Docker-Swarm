@@ -1,0 +1,50 @@
+name: docker-compose-pipeline
+
+on:
+  push:
+    branches:
+      - cicd
+
+jobs:
+  deploy:
+    name: Deploy images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Validate stack.yml
+        run: docker-compose -f stack.yml config
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Create deployment folder
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p codimates-swarm"
+
+      - name: Copy stack file
+        run: |
+          scp -i ~/.ssh/id_rsa stack.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:codimates-swarm/stack.yml
+
+      - name: Deploy stack
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          cd codimates-swarm
+          docker stack deploy two-tier -c stack.yml
+          EOF
+
+      - name: Verify deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "docker service ls"
